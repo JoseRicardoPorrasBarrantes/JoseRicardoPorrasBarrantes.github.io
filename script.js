@@ -2,7 +2,6 @@ const options = {
   Operaciones: ["Suma","Resta","Multiplicacion","Division","Raiz","Potencia",],
   Figuras: ["Cuadrado", "Triangulo","Rectangulo","Circulo","Pentagono","Hexagono"],
   Medidas_Tiempo:["Segundo","Minuto","Hora"],
-  Nombres:["YOS"]
 };
 
 
