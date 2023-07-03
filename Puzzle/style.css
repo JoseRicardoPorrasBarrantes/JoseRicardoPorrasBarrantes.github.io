@@ -69,3 +69,7 @@
       height: 20em;
     }
 }
+
+.bloque{
+  display: block;
+}
