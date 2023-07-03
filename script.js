@@ -1,142 +1,219 @@
-//Initial References
-const moves = document.getElementById("moves");
-const container = document.querySelector(".container");
-const startButton = document.getElementById("start-button");
-const coverScreen = document.querySelector(".cover-screen");
-const result = document.getElementById("result");
-let currentElement = "";
-let movesCount,
-  imagesArr = [];
-const isTouchDevice = () => {
-  try {
-    //We try to create TouchEvent (it would fail for desktops ad throw error)
-    document.createEvent("TouchEvent");
-    return true;
-  } catch (e) {
-    return false;
+const options = {
+  Operaciones: ["Suma","Resta","Multiplicacion","Division","Raiz","Potencia",],
+  Figuras: ["Cuadrado", "Triangulo","Rectangulo","Circulo","Pentagono","Hexagono"],
+  Medidas_Tiempo:["Segundo","Minuto","Hora"],
+};
+
+
+
+//Referencias
+const letterContainer = document.getElementById("letter-container");
+const optionsContainer = document.getElementById("options-container");
+const userInputSection = document.getElementById("user-input-section");
+const newGameContainer = document.getElementById("new-game-container");
+const newGameButton = document.getElementById("new-game-button");
+const canvas = document.getElementById("canvas");
+const resultText = document.getElementById("result-text");
+
+//Contador
+let winCount = 0;
+let count = 0;
+
+let chosenWord = "";
+
+//Display botones de opciones
+const displayOptions = () => {
+  optionsContainer.innerHTML += `<h3>Por favor seleccione una opcion</h3>`;
+  let buttonCon = document.createElement("div");
+  for (let value in options) {
+    buttonCon.innerHTML += `<button class="options" onclick="generateWord('${value}')">${value}</button>`;
+  }
+  optionsContainer.appendChild(buttonCon);
+};
+
+//Bloquear todos los botones
+const blocker = () => {
+  let optionsButtons = document.querySelectorAll(".options");
+  let letterButtons = document.querySelectorAll(".letters");
+  //Deshabilitar todas las opciones
+  optionsButtons.forEach((button) => {
+    button.disabled = true;
+  });
+
+  //Deshabilitar todas las letras
+  letterButtons.forEach((button) => {
+    button.disabled.true;
+  });
+  newGameContainer.classList.remove("hide");
+};
+
+//Generador de Palabras
+const generateWord = (optionValue) => {
+  let optionsButtons = document.querySelectorAll(".options");
+  optionsButtons.forEach((button) => {
+    if (button.innerText.toLowerCase() === optionValue) {
+      button.classList.add("active");      
+    }
+    button.disabled = true;    
+  });
+  
+  letterContainer.classList.remove("hide");
+  userInputSection.innerText = "";
+
+  let optionArray = options[optionValue];
+
+  chosenWord = optionArray[Math.floor(Math.random() * optionArray.length)];
+  chosenWord = chosenWord.toUpperCase();
+
+  
+  let displayItem = chosenWord.replace(/./g, '<span class="dashes">_</span>');
+
+  userInputSection.innerHTML = displayItem;
+};
+
+//Funcion inicial
+const initializer = () => {
+  winCount = 0;
+  count = 0;
+
+  //Borrar contenido y ocultar letras
+  userInputSection.innerHTML = "";
+  optionsContainer.innerHTML = "";
+  letterContainer.classList.add("hide");
+  newGameContainer.classList.add("hide");
+  letterContainer.innerHTML = "";
+
+  //For que crea botones
+  for (let i = 65; i < 91; i++) {  
+    let button = document.createElement("button");
+    button.classList.add("letters");
+    //ASCII[A-Z]
+    button.innerText = String.fromCharCode(i);
+    button.addEventListener("click", () => {
+      let charArray = chosenWord.split("");
+      let dashes = document.getElementsByClassName("dashes");
+      
+      if (charArray.includes(button.innerText)) {
+        charArray.forEach((char, index) => {
+          
+          if (char === button.innerText) {
+            
+            dashes[index].innerText = char;
+            
+            winCount += 1;
+            
+            if (winCount == charArray.length) {
+              resultText.innerHTML = `<h2 class='win-msg'>Ganaste!!</h2><p>La palabra era <span>${chosenWord}</span></p>`;
+              
+              blocker();
+            }
+          }
+        });
+      } else {
+        
+        count += 1;
+        
+        drawMan(count);
+        
+        if (count == 6) {
+          resultText.innerHTML = `<h2 class='lose-msg'>Perdiste!!</h2><p>La palabra era <span>${chosenWord}</span></p>`;
+          blocker();
+        }
+      }
+      
+      button.disabled = true;
+    });
+    letterContainer.append(button);
+  }
+
+  displayOptions();
+  
+  let { initialDrawing } = canvasCreator();
+  
+  initialDrawing();
+};
+
+//Canvas
+const canvasCreator = () => {
+  let context = canvas.getContext("2d");
+  context.beginPath();
+  context.strokeStyle = "#000";
+  context.lineWidth = 2;
+
+  
+  const drawLine = (fromX, fromY, toX, toY) => {
+    context.moveTo(fromX, fromY);
+    context.lineTo(toX, toY);
+    context.stroke();
+  };
+
+  const head = () => {
+    context.beginPath();
+    context.arc(70, 30, 10, 0, Math.PI * 2, true);
+    context.stroke();
+  };
+
+  const body = () => {
+    drawLine(70, 40, 70, 80);
+  };
+
+  const leftArm = () => {
+    drawLine(70, 50, 50, 70);
+  };
+
+  const rightArm = () => {
+    drawLine(70, 50, 90, 70);
+  };
+
+  const leftLeg = () => {
+    drawLine(70, 80, 50, 110);
+  };
+
+  const rightLeg = () => {
+    drawLine(70, 80, 90, 110);
+  };
+
+  
+  const initialDrawing = () => {
+    
+    context.clearRect(0, 0, context.canvas.width, context.canvas.height);
+    
+    drawLine(10, 130, 130, 130);    
+    drawLine(10, 10, 10, 131);    
+    drawLine(10, 10, 70, 10);    
+    drawLine(70, 10, 70, 20);
+  };
+
+  return { initialDrawing, head, body, leftArm, rightArm, leftLeg, rightLeg };
+};
+
+
+const drawMan = (count) => {
+  let { head, body, leftArm, rightArm, leftLeg, rightLeg } = canvasCreator();
+  switch (count) {
+    case 1:
+      head();
+      break;
+    case 2:
+      body();
+      break;
+    case 3:
+      leftArm();
+      break;
+    case 4:
+      rightArm();
+      break;
+    case 5:
+      leftLeg();
+      break;
+    case 6:
+      rightLeg();
+      break;
+    default:
+      break;
   }
 };
-//Random number for image
-const randomNumber = () => Math.floor(Math.random() * 8) + 1;
 
-//Get row and column value from data-position
-const getCoords = (element) => {
-  const [row, col] = element.getAttribute("data-position").split("_");
-  return [parseInt(row), parseInt(col)];
-};
 
-//row1, col1 are image co-ordinates while row2 amd col2 are blank image co-ordinates
-const checkAdjacent = (row1, row2, col1, col2) => {
-  if (row1 == row2) {
-    //left/right
-    if (col2 == col1 - 1 || col2 == col1 + 1) {
-      return true;
-    }
-  } else if (col1 == col2) {
-    //up/down
-    if (row2 == row1 - 1 || row2 == row1 + 1) {
-      return true;
-    }
-  }
-  return false;
-};
-
-//Fill array with random value for images
-const randomImages = () => {
-  while (imagesArr.length < 8) {
-    let randomVal = randomNumber();
-    if (!imagesArr.includes(randomVal)) {
-      imagesArr.push(randomVal);
-    }
-  }
-  imagesArr.push(9);
-};
-
-//Generate Grid
-const gridGenerator = () => {
-  let count = 0;
-  for (let i = 0; i < 3; i++) {
-    for (let j = 0; j < 3; j++) {
-      let div = document.createElement("div");
-      div.setAttribute("data-position", `${i}_${j}`);
-      div.addEventListener("click", selectImage);
-      div.classList.add("image-container");
-      div.innerHTML = `<img src="image_part_00${
-        imagesArr[count]
-      }.png" class="image ${
-        imagesArr[count] == 9 ? "target" : ""
-      }" data-index="${imagesArr[count]}"/>`;
-      count += 1;
-      container.appendChild(div);
-    }
-  }
-};
-
-//Click the image
-const selectImage = (e) => {
-  e.preventDefault();
-  //Set currentElement
-  currentElement = e.target;
-  //target(blank image)
-  let targetElement = document.querySelector(".target");
-  let currentParent = currentElement.parentElement;
-  let targetParent = targetElement.parentElement;
-
-  //get row and col values for both elements
-  const [row1, col1] = getCoords(currentParent);
-  const [row2, col2] = getCoords(targetParent);
-
-  if (checkAdjacent(row1, row2, col1, col2)) {
-    //Swap
-    currentElement.remove();
-    targetElement.remove();
-    //Get image index(to be used later for manipulating array)
-    let currentIndex = parseInt(currentElement.getAttribute("data-index"));
-    let targetIndex = parseInt(targetElement.getAttribute("data-index"));
-    //Swap Index
-    currentElement.setAttribute("data-index", targetIndex);
-    targetElement.setAttribute("data-index", currentIndex);
-    //Swap Images
-    currentParent.appendChild(targetElement);
-    targetParent.appendChild(currentElement);
-    //Array swaps
-    let currentArrIndex = imagesArr.indexOf(currentIndex);
-    let targetArrIndex = imagesArr.indexOf(targetIndex);
-    [imagesArr[currentArrIndex], imagesArr[targetArrIndex]] = [
-      imagesArr[targetArrIndex],
-      imagesArr[currentArrIndex],
-    ];
-
-    //Win condition
-    if (imagesArr.join("") == "123456789") {
-      setTimeout(() => {
-        //When games ends display the cover screen again
-        coverScreen.classList.remove("hide");
-        container.classList.add("hide");
-        result.innerText = `Total Moves: ${movesCount}`;
-        startButton.innerText = "RestartGame";
-      }, 1000);
-    }
-    //Increment a display move
-    movesCount += 1;
-    moves.innerText = `Moves: ${movesCount}`;
-  }
-};
-
-//Start button click should display the container
-startButton.addEventListener("click", () => {
-  container.classList.remove("hide");
-  coverScreen.classList.add("hide");
-  container.innerHTML = "";
-  imagesArr = [];
-  randomImages();
-  gridGenerator();
-  movesCount = 0;
-  moves.innerText = `Moves: ${movesCount}`;
-});
-
-//Display start screen first
-window.onload = () => {
-  coverScreen.classList.remove("hide");
-  container.classList.add("hide");
-};
+newGameButton.addEventListener("click", initializer);
+window.onload = initializer;
